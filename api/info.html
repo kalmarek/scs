@@ -1,0 +1,246 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Return information &mdash; SCS 3.2.7 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/scs_theme.css?v=7d28eb0c" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=84e44b8a"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+      <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Exit flags" href="exit_flags.html" />
+    <link rel="prev" title="Settings" href="settings.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html">
+            
+              <img src="../_static/scs_logo_transparent.png" class="logo" alt="Logo"/>
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../algorithm/index.html">Algorithm</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="cones.html">Cones</a></li>
+<li class="toctree-l2"><a class="reference internal" href="matrices.html">Data matrices</a></li>
+<li class="toctree-l2"><a class="reference internal" href="settings.html">Settings</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Return information</a></li>
+<li class="toctree-l2"><a class="reference internal" href="exit_flags.html">Exit flags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compile_flags.html">Compile flags</a></li>
+<li class="toctree-l2"><a class="reference internal" href="index.html#interfaces">Interfaces</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../install/index.html">Install</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../linear_solver/index.html">Linear System Solver</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../blas_lapack/index.html">BLAS and LAPACK</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/index.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contributing/index.html">Contributing</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../help/index.html">Help</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../citing/index.html">Citing SCS</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">SCS</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">API</a></li>
+      <li class="breadcrumb-item active">Return information</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/info.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="return-information">
+<span id="info"></span><h1>Return information<a class="headerlink" href="#return-information" title="Link to this heading"></a></h1>
+<p>When SCS terminates it will return an <a class="reference internal" href="c.html#scsinfo"><span class="std std-ref">ScsInfo</span></a> struct containing
+the following fields.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 15.0%" />
+<col style="width: 15.0%" />
+<col style="width: 70.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Type</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">iter</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_int</span></code></p></td>
+<td><p>Number of iterations taken</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">status</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">char</span> <span class="pre">*</span></code></p></td>
+<td><p>Status string (e.g., ‘solved’)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">lin_sys_solver</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">char</span> <span class="pre">*</span></code></p></td>
+<td><p>Linear system solver used</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">status_val</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_int</span></code></p></td>
+<td><p>Status integer <a class="reference internal" href="exit_flags.html#exit-flags"><span class="std std-ref">exit flag</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">scale_updates</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_int</span></code></p></td>
+<td><p>Number of updates to the scale parameter  (see <a class="reference internal" href="../algorithm/scale.html#updating-scale"><span class="std std-ref">Dynamic scale updating</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">pobj</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Primal objective</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dobj</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Dual objective</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">res_pri</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Primal residual (see <a class="reference internal" href="../algorithm/index.html#termination"><span class="std std-ref">termination conditions</span></a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">res_dual</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Dual residual (see <a class="reference internal" href="../algorithm/index.html#termination"><span class="std std-ref">termination conditions</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">gap</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Absolute duality gap  (see <a class="reference internal" href="../algorithm/index.html#termination"><span class="std std-ref">termination conditions</span></a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">res_infeas</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Primal infeasibility residual (see <a class="reference internal" href="../algorithm/index.html#termination"><span class="std std-ref">termination conditions</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">res_unbdd_a</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Dual infeasibility residual involving <span class="math notranslate nohighlight">\(A\)</span> (see <a class="reference internal" href="../algorithm/index.html#termination"><span class="std std-ref">termination conditions</span></a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">res_unbdd_p</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Dual infeasibility residual involving <span class="math notranslate nohighlight">\(P\)</span> (see <a class="reference internal" href="../algorithm/index.html#termination"><span class="std std-ref">termination conditions</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">comp_slack</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Complementary slackness (<span class="math notranslate nohighlight">\(s^\top y\)</span>), should be very close to zero</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">setup_time</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Time taken for setup (milliseconds)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">solve_time</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Time taken for solve (milliseconds)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">scale</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Final scale parameter, useful for initializing next solve (see <a class="reference internal" href="../algorithm/scale.html#updating-scale"><span class="std std-ref">Dynamic scale updating</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">rejected_accel_steps</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_int</span></code></p></td>
+<td><p>Number of times an AA update was rejected by the safeguarding check (see <a class="reference internal" href="../algorithm/acceleration.html#acceleration"><span class="std std-ref">Acceleration</span></a>)</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">accepted_accel_steps</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_int</span></code></p></td>
+<td><p>Number of times an AA update was accepted by the safeguarding check (see <a class="reference internal" href="../algorithm/acceleration.html#acceleration"><span class="std std-ref">Acceleration</span></a>)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">lin_sys_time</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Total time (milliseconds) spent in the <a class="reference internal" href="../linear_solver/index.html#linear-solver"><span class="std std-ref">linear system solver</span></a></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">cone_time</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Total time (milliseconds) spent in the <a class="reference internal" href="cones.html#cones"><span class="std std-ref">cone projection</span></a></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">accel_time</span></code></p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">scs_float</span></code></p></td>
+<td><p>Total time (milliseconds) spent in the <a class="reference internal" href="../algorithm/acceleration.html#acceleration"><span class="std std-ref">aceleration routine</span></a></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="settings.html" class="btn btn-neutral float-left" title="Settings" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="exit_flags.html" class="btn btn-neutral float-right" title="Exit flags" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2021, Brendan O&#39;Donoghue.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+    <!-- Theme Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-9CY7R8S5N2"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-9CY7R8S5N2', {
+          'anonymize_ip': false,
+      });
+    </script> 
+
+</body>
+</html>
