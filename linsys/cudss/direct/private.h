@@ -13,9 +13,9 @@ extern "C"
 #endif
 
 #ifndef DLONG
-#define SCS_CUDA_INDEX CUDA_R_64I
-#else
 #define SCS_CUDA_INDEX CUDA_R_32I
+#else
+#define SCS_CUDA_INDEX CUDA_R_64I
 #endif
 
 #include "csparse.h"
