@@ -114,9 +114,9 @@ ScsLinSysWork *scs_init_lin_sys_work(const ScsMatrix *A, const ScsMatrix *P,
     return SCS_NULL;
   }
 
-  /* Form KKT matrix - the one below is stored as upper-triangular, CSC */
-  /* Since it is symmetric, later we will pass it to cuDSS as lower-triangular, CSR */
-  p->kkt = SCS(form_kkt)(A, P, p->diag_p, diag_r, p->diag_r_idxs, 0);
+  /* Form KKT matrix as upper-triangular, CSC */
+  /* Because of symmetry it is equivalent to lower-triangular, CSR */
+  p->kkt = SCS(form_kkt)(A, P, p->diag_p, diag_r, p->diag_r_idxs, 1);
   if (!p->kkt)
   {
     scs_printf("Error in forming KKT matrix");
@@ -142,7 +142,7 @@ ScsLinSysWork *scs_init_lin_sys_work(const ScsMatrix *A, const ScsMatrix *P,
   CUDA_CHECK_ABORT(cudaMalloc((void **)&p->d_kkt_col_ind, nnz * sizeof(scs_int)), p, "cudaMalloc: kkt_col_ind");
 
   /* Copy KKT matrix to device */
-  /* Note: we flipped column pointers of p->kkt->p to row pointer on the device */
+  /* Note: we treat column pointers (p->kkt->p) as row pointers on the device */
   CUDA_CHECK_ABORT(cudaMemcpy(p->d_kkt_val, p->kkt->x, nnz * sizeof(scs_float),
                               cudaMemcpyHostToDevice),
                    p, "cudaMemcpy: kkt_val");
