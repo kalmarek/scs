@@ -167,13 +167,13 @@ ScsLinSysWork *scs_init_lin_sys_work(const ScsMatrix *A, const ScsMatrix *P,
   CUDA_CHECK_ABORT(cudaMalloc((void **)&p->d_b, p->n_plus_m * sizeof(scs_float)), p, "cudaMalloc: b");
   CUDA_CHECK_ABORT(cudaMalloc((void **)&p->d_sol, p->n_plus_m * sizeof(scs_float)), p, "cudaMalloc: sol");
 
-  /* b is row vector */
-  CUDSS_CHECK_ABORT(cudssMatrixCreateDn(&p->d_b_mat, 1, p->n_plus_m, 1, p->d_b, CUDA_R_64F,
-                                        CUDSS_LAYOUT_COL_MAJOR),
+  /* Create RHS and solution matrix descriptors */
+  scs_int nrhs = 1;
+  CUDSS_CHECK_ABORT(cudssMatrixCreateDn(&p->d_b_mat, p->n_plus_m, nrhs, p->n_plus_m, p->d_b,
+                                        SCS_CUDA_FLOAT, CUDSS_LAYOUT_COL_MAJOR),
                     p, "cudssMatrixCreateDn: b");
-  /* sol is column vector */
-  CUDSS_CHECK_ABORT(cudssMatrixCreateDn(&p->d_sol_mat, p->n_plus_m, 1, p->n_plus_m, p->d_b, CUDA_R_64F,
-                                        CUDSS_LAYOUT_COL_MAJOR),
+  CUDSS_CHECK_ABORT(cudssMatrixCreateDn(&p->d_sol_mat, p->n_plus_m, nrhs, p->n_plus_m, p->d_sol,
+                                        SCS_CUDA_FLOAT, CUDSS_LAYOUT_COL_MAJOR),
                     p, "cudssMatrixCreateDn: sol");
 
   /* Symbolic factorization */
