@@ -53,6 +53,8 @@ $(INDIRSRC)/indirect/private.o: $(INDIRSRC)/private.c $(INDIRSRC)/private.h
 $(MKLSRC)/private.o: $(MKLSRC)/private.c  $(MKLSRC)/private.h
 $(HIPSRC)/private.o: $(HIPSRC)/private.c  $(HIPSRC)/private.h
 	$(HIPCC) $(CFLAGS) $(HIPCFLAGS) -I$(HIPSRC) -c $(HIPSRC)/private.c -o $@
+$(RESOLVESRC)/private.o: $(RESOLVESRC)/private.cpp  $(RESOLVESRC)/private.hpp
+	$(CXX) $(CFLAGS) -I$(RESOLVESRC) -I$(RESOLVE_PATH) $(RESOLVECFLAGS) -c $(RESOLVESRC)/private.cpp -o $@ -std=c++14
 $(LINSYS)/scs_matrix.o: $(LINSYS)/scs_matrix.c $(LINSYS)/scs_matrix.h
 $(LINSYS)/csparse.o: $(LINSYS)/csparse.c $(LINSYS)/csparse.h
 
@@ -76,6 +78,11 @@ $(OUT)/libscship.a: $(SCS_O) $(SCS_OBJECTS) $(HIPSRC)/private.o $(LINSYS)/scs_ma
 	$(ARCHIVE) $@ $^
 	- $(RANLIB) $@
 
+$(OUT)/libscsresolve.a: $(SCS_O) $(SCS_OBJECTS) $(RESOLVESRC)/private.o $(LINSYS)/scs_matrix.o $(LINSYS)/csparse.o
+	mkdir -p $(OUT)
+	$(ARCHIVE) $@ $^
+	- $(RANLIB) $@
+
 $(OUT)/libscsdir.$(SHARED): $(SCS_O) $(SCS_OBJECTS) $(DIRSRC)/private.o $(AMD_OBJS) $(LDL_OBJS) $(LINSYS)/scs_matrix.o $(LINSYS)/csparse.o
 	mkdir -p $(OUT)
 	$(CC) $(CFLAGS) -shared -Wl,$(SONAME),$(@:$(OUT)/%=%) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS)
@@ -92,6 +99,10 @@ $(OUT)/libscship.$(SHARED): $(SCS_O) $(SCS_OBJECTS) $(HIPSRC)/private.o $(LINSYS
 	mkdir -p $(OUT)
 	$(CC) $(CFLAGS) -shared -Wl,$(SONAME),$(@:$(OUT)/%=%) -o $@ $^ $(LDFLAGS) $(HIPLDFLAGS)
 
+$(OUT)/libscsresolve.$(SHARED): $(SCS_O) $(SCS_OBJECTS) $(RESOLVESRC)/private.o $(LINSYS)/scs_matrix.o $(LINSYS)/csparse.o
+	mkdir -p $(OUT)
+	gcc $(CFLAGS) -shared -Wl,$(SONAME),$(@:$(OUT)/%=%) -o $@ $^ $(LDFLAGS) $(RESOLVELDFLAGS)
+
 $(OUT)/demo_socp_direct: test/random_socp_prob.c $(OUT)/libscsdir.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS)
 
@@ -103,6 +114,9 @@ $(OUT)/demo_socp_mkl: test/random_socp_prob.c $(OUT)/libscsmkl.a
 
 $(OUT)/demo_socp_hip: test/random_socp_prob.c $(OUT)/libscship.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS) $(HIPLDFLAGS)
+
+$(OUT)/demo_socp_resolve: test/random_socp_prob.c $(OUT)/libscsresolve.a
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS) $(RESOLVELDFLAGS)
 
 $(OUT)/run_from_file_direct: test/run_from_file.c $(OUT)/libscsdir.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS)
@@ -124,6 +138,8 @@ $(OUT)/run_tests_mkl: test/run_tests.c $(OUT)/libscsmkl.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(MKLFLAGS) -Itest
 $(OUT)/run_tests_hip: test/run_tests.c $(OUT)/libscship.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS) $(HIPLDFLAGS) -Itest
+$(OUT)/run_tests_resolve: test/run_tests.c $(OUT)/libscsresolve.a
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS) $(RESOLVELDFLAGS) -Itest
 
 .PHONY: test_gpu
 test_gpu: $(OUT)/run_tests_gpu_indirect # $(OUT)/run_tests_gpu_direct
@@ -137,6 +153,9 @@ endif
 
 .PHONY:
 hip: $(OUT)/libscship.a $(OUT)/libscship.$(SHARED) $(OUT)/run_tests_hip $(OUT)/demo_socp_hip
+
+.PHONY:
+resolve: $(OUT)/libscsresolve.a $(OUT)/libscsresolve.$(SHARED) $(OUT)/run_tests_resolve $(OUT)/demo_socp_resolve
 
 $(OUT)/run_tests_gpu_indirect: test/run_tests.c $(OUT)/libscsgpuindir.a
 	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS) $(BLASLDFLAGS) $(CULDFLAGS) -Itest

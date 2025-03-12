@@ -72,6 +72,7 @@ GPUDIR = $(LINSYS)/gpu/direct
 GPUINDIR = $(LINSYS)/gpu/indirect
 MKLSRC = $(LINSYS)/mkl/direct
 HIPSRC = $(LINSYS)/hip/direct
+RESOLVESRC = $(LINSYS)/resolve/direct
 
 EXTSRC = $(LINSYS)/external
 
@@ -142,6 +143,10 @@ HIP_PATH = /opt/rocm
 HIPLDFLAGS = -L$(HIP_PATH)/lib -lamdhip64 -lhipsparse
 HIPCFLAGS = -D__$(HIP_PLATFORM)__ -I$(HIP_PATH)/include -Wno-extra-semi -Wno-strict-prototypes
 
+RESOLVE_PATH = $(EXTSRC)/ReSolve
+RESOLVE_LIBPATH = $(RESOLVE_PATH)/build/resolve
+RESOLVECFLAGS = -I$(HIP_PATH)/include -I/usr/include/suitesparse -Wno-unused-result -Wno-pedantic -Wno-strict-prototypes
+RESOLVELDFLAGS = -lstdc++ -L$(RESOLVE_LIBPATH) -lReSolve -L$(RESOLVE_LIBPATH)/matrix -lresolve_matrix -L$(RESOLVE_LIBPATH)/vector -lresolve_vector -L$(RESOLVE_LIBPATH)/workspace -lresolve_workspace
 ############ OPENMP: ############
 # set USE_OPENMP = 1 to allow openmp (multi-threaded matrix multiplies):
 # set the number of threads to, for example, 4 by entering the command:
