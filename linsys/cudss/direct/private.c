@@ -195,10 +195,10 @@ scs_int scs_solve_lin_sys(ScsLinSysWork *p, scs_float *b, const scs_float *ws,
 {
   /* Copy right-hand side to device */
   cudaError_t custatus = cudaMemcpy(p->d_b, b, p->n_plus_m * sizeof(scs_float),
-                        cudaMemcpyHostToDevice);
+                                    cudaMemcpyHostToDevice);
   if (custatus != cudaSuccess)
   {
-    scs_printf("scs_solve_lin_sys: Error copying `b` side to device: %d", (int)custatus);
+    scs_printf("scs_solve_lin_sys: Error copying `b` side to device: %d\n", (int)custatus);
     return custatus;
   }
 
@@ -207,20 +207,20 @@ scs_int scs_solve_lin_sys(ScsLinSysWork *p, scs_float *b, const scs_float *ws,
 
   /* Solve the system */
   cudssStatus_t status = cudssExecute(p->handle, CUDSS_PHASE_SOLVE, p->solver_config, p->solver_data,
-                        p->d_kkt_mat, p->d_sol_mat, p->d_b_mat);
+                                      p->d_kkt_mat, p->d_sol_mat, p->d_b_mat);
 
   if (status != CUDSS_STATUS_SUCCESS)
   {
-    scs_printf("scs_solve_lin_sys: Error during solve: %d", (int)status);
+    scs_printf("scs_solve_lin_sys: Error during solve: %d\n", (int)status);
     return status;
   }
 
   /* Copy solution back to host */
   custatus = cudaMemcpy(b, p->d_sol, p->n_plus_m * sizeof(scs_float),
-                                  cudaMemcpyDeviceToHost);
+                        cudaMemcpyDeviceToHost);
   if (status != cudaSuccess)
   {
-    scs_printf("scs_solve_lin_sys: Error copying d_sol to host: %d", (int)status);
+    scs_printf("scs_solve_lin_sys: Error copying d_sol to host: %d\n", (int)status);
     return status;
   }
 
@@ -246,11 +246,11 @@ void scs_update_lin_sys_diag_r(ScsLinSysWork *p, const scs_float *diag_r)
 
   /* Copy updated values to device */
   cudaError_t custatus = cudaMemcpy(p->d_kkt_val, p->kkt->x,
-                                  p->kkt->p[p->n_plus_m] * sizeof(scs_float),
-                                  cudaMemcpyHostToDevice);
+                                    p->kkt->p[p->n_plus_m] * sizeof(scs_float),
+                                    cudaMemcpyHostToDevice);
   if (custatus != cudaSuccess)
   {
-    scs_printf("scs_update_lin_sys_diag_r: Error copying kkt->x to device: %d", (int)custatus);
+    scs_printf("scs_update_lin_sys_diag_r: Error copying kkt->x to device: %d\n", (int)custatus);
     return;
   }
 
@@ -260,7 +260,7 @@ void scs_update_lin_sys_diag_r(ScsLinSysWork *p, const scs_float *diag_r)
                                      p->d_kkt_val);
   if (status != CUDSS_STATUS_SUCCESS)
   {
-    scs_printf("scs_update_lin_sys_diag_r: Error updating kkt matrix on device: %d", (int)status);
+    scs_printf("scs_update_lin_sys_diag_r: Error updating kkt matrix on device: %d\n", (int)status);
     return;
   }
 
@@ -269,7 +269,7 @@ void scs_update_lin_sys_diag_r(ScsLinSysWork *p, const scs_float *diag_r)
                         p->d_kkt_mat, p->d_sol_mat, p->d_b_mat);
   if (status != CUDSS_STATUS_SUCCESS)
   {
-    scs_printf("scs_update_lin_sys_diag_r: Error during re-factorization: %d", (int)status);
+    scs_printf("scs_update_lin_sys_diag_r: Error during re-factorization: %d\n", (int)status);
     return;
   }
 }
