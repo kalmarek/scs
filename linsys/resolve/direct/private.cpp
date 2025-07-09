@@ -20,63 +20,65 @@ extern "C"
     return "hip-ReSolve-direct";
   }
 
-  void scs_free_lin_sys_work(ScsLinSysWork *p)
+  void scs_free_lin_sys_work(ScsLinSysWork *work)
   {
-    if (p == NULL)
+    if (work == NULL)
       return;
 
     // Free memory owned by ReSolve
-    delete p->mat_A;
-    delete p->Rf;
-    delete p->vec_x;
-    delete p->vec_rhs;
+    delete work->mat_A;
+    delete work->Rf;
+    delete work->vec_x;
+    delete work->vec_rhs;
 
     // Free the matrix kkt data
-    if (p->kkt)
-      SCS(cs_spfree)
-    (p->kkt);
+    if (work->kkt)
+      SCS(cs_spfree)(work->kkt);
 
     // Free host-side arrays used for updates
-    if (p->diag_r_idxs)
-      scs_free(p->diag_r_idxs);
-    if (p->diag_p)
-      scs_free(p->diag_p);
+    if (work->diag_r_idxs)
+      scs_free(work->diag_r_idxs);
+    if (work->diag_p)
+      scs_free(work->diag_p);
 
     // Finally, free the work struct itself
-    scs_free(p);
+    scs_free(work);
   }
 
   scs_int __initialize_work(ScsLinSysWork *work)
   {
     // initialize ReSolve members of work:
-
-    int nnz = work->kkt->p[work->kkt->n]; // The last element of A->p gives the number of non-zeros
-    work->mat_A = new ReSolve::matrix::Csr(work->kkt->n, work->kkt->m, nnz);
-    work->mat_A->setMatrixData(work->kkt->p, work->kkt->i, work->kkt->x, ReSolve::memory::HOST);
-
-    // mat_A is CSC, symmetric, non-expanded
-    work->mat_A->setSymmetric(true);
-    work->mat_A->setExpanded(false);
+    int nnz = work->kkt->p[work->kkt->n]; // The last element of A->work gives the number of non-zeros
+    // the matrix A is CSC, symmetric and not expanded
+    work->mat_A = new ReSolve::matrix::Csr(
+      work->kkt->n, work->kkt->m, nnz, true, false);
+    work->mat_A->setDataPointers(
+      work->kkt->p, work->kkt->i, work->kkt->x, ReSolve::memory::HOST);
     work->mat_A->syncData(ReSolve::memory::DEVICE);
 
-    work->vec_x = new ReSolve::vector::Vector(work->mat_A->getNumRows());
-    work->vec_x->setToConst(1.0, ReSolve::memory::HOST);
     work->vec_rhs = new ReSolve::vector::Vector(work->mat_A->getNumRows());
-    work->vec_rhs->setToConst(1.0, ReSolve::memory::HOST);
+    work->vec_rhs->allocate(ReSolve::memory::DEVICE);
+    // work->vec_rhs->allocate(ReSolve::memory::HOST);
 
-    ReSolve::LinAlgWorkspaceHIP *workspace_HIP = new ReSolve::LinAlgWorkspaceHIP;
-    workspace_HIP->initializeHandles();
-    work->Rf = new ReSolve::LinSolverDirectRocSolverRf(workspace_HIP);
+    work->vec_x = new ReSolve::vector::Vector(work->mat_A->getNumRows());
+    work->vec_x->allocate(ReSolve::memory::DEVICE);
+    // work->vec_x->allocate(ReSolve::memory::HOST);
 
-    // we start with KLU to setup work->Rf in a moment
+    // we start with KLU
     ReSolve::LinSolverDirectKLU *KLU = new ReSolve::LinSolverDirectKLU;
     scs_int status;
     status = KLU->setup(work->mat_A);
-    std::cout << "KLU analysis status: " << status << std::endl;
+    if (status != 0){
+      scs_printf("Error in KLU setup: %d\n", (int)status);
+    }
+    status = KLU->analyze();
+    if (status != 0){
+      scs_printf("Error in KLU analyze: %d\n", (int)status);
+    }
     status = KLU->factorize();
-    std::cout << "KLU factorization status: " << status << std::endl;
-    status = KLU->solve(work->vec_rhs, work->vec_x);
-    std::cout << "KLU solve status: " << status << std::endl;
+    if (status != 0){
+      scs_printf("Error in KLU factorization: %d\n", (int)status);
+    }
 
     ReSolve::matrix::Csc *L = (ReSolve::matrix::Csc *)KLU->getLFactor();
     ReSolve::matrix::Csc *U = (ReSolve::matrix::Csc *)KLU->getUFactor();
@@ -84,45 +86,58 @@ extern "C"
     ReSolve::index_type *Q = KLU->getQOrdering();
 
     // finally let's setup work->Rf and prepare the factorisation!
+    ReSolve::LinAlgWorkspaceHIP *workspace_HIP = new ReSolve::LinAlgWorkspaceHIP;
+    workspace_HIP->initializeHandles();
+    work->Rf = new ReSolve::LinSolverDirectRocSolverRf(workspace_HIP);
+
     status = work->Rf->setup(work->mat_A, L, U, P, Q, work->vec_rhs);
-    std::cout << "rocsolver rf refactorization status: " << status << std::endl;
+    if (status != 0)
+    {
+      scs_printf("Error in ReSolve Rf setup: %d\n", (int)status);
+      return status;
+    }
     status = work->Rf->refactorize();
+    if (status != 0)
+    {
+      scs_printf("Error in ReSolve Rf refactorization: %d\n", (int)status);
+      return status;
+    }
     return status;
   }
 
   ScsLinSysWork *scs_init_lin_sys_work(const ScsMatrix *A, const ScsMatrix *P,
                                        const scs_float *diag_r)
   {
-    // ScsLinSysWork *p = scs_calloc(1, sizeof(ScsLinSysWork));
-    ScsLinSysWork *p = new ScsLinSysWork();
+    // ScsLinSysWork *work = scs_calloc(1, sizeof(ScsLinSysWork));
+    ScsLinSysWork *work = new ScsLinSysWork();
 
-    p->n = A->n;
-    p->m = A->m;
-    scs_int n_plus_m = p->n + p->m;
+    work->n = A->n;
+    work->m = A->m;
+    scs_int n_plus_m = work->n + work->m;
 
-    p->diag_r_idxs = (scs_int *)scs_calloc(n_plus_m, sizeof(scs_int));
-    p->diag_p = (scs_float *)scs_calloc(p->n, sizeof(scs_float));
+    work->diag_r_idxs = (scs_int *)scs_calloc(n_plus_m, sizeof(scs_int));
+    work->diag_p = (scs_float *)scs_calloc(work->n, sizeof(scs_float));
 
     // p->kkt is CSC in lower triangular form; this is equivalen to upper CSR
-    p->kkt = SCS(form_kkt)(A, P, p->diag_p, diag_r, p->diag_r_idxs, 0);
-    if (!(p->kkt))
+    work->kkt = SCS(form_kkt)(A, P, work->diag_p, diag_r, work->diag_r_idxs, 0);
+    if (!(work->kkt))
     {
       scs_printf("Error in forming KKT matrix");
-      scs_free_lin_sys_work(p);
+      scs_free_lin_sys_work(work);
       return SCS_NULL;
     }
 
     int status;
-    status = __initialize_work(p);
+    status = __initialize_work(work);
 
     if (status == 0)
     {
-      return p;
+      return work;
     }
     else
     {
       scs_printf("error in factorisation: %d", (int)status);
-      scs_free_lin_sys_work(p);
+      scs_free_lin_sys_work(work);
       return SCS_NULL;
     }
   }
@@ -132,21 +147,26 @@ extern "C"
                             scs_float tol)
   {
     // TODO: tol is ignored for now
-    if (p == NULL || b == NULL || ws == NULL)
-    {
-      return -1; // Error: invalid input
-    }
 
     // copies data to device
-    p->vec_rhs->update(b, ReSolve::memory::HOST, ReSolve::memory::DEVICE);
-    p->vec_x->update(const_cast<ReSolve::real_type *>(ws), ReSolve::memory::HOST, ReSolve::memory::DEVICE);
+    // std::cout << "scs_solve_lin_sys: copying data to device" << std::endl;
+    p->vec_rhs->copyDataFrom(b, ReSolve::memory::HOST, ReSolve::memory::DEVICE);
+    // p->vec_rhs->syncData(ReSolve::memory::DEVICE);
+    // std::cout << "scs_solve_lin_sys: vec_rhs copied" << std::endl;
+    p->vec_x->copyDataFrom(ws, ReSolve::memory::HOST, ReSolve::memory::DEVICE);
+    // p->vec_x->syncData(ReSolve::memory::DEVICE);
+    // std::cout << "scs_solve_lin_sys: vec_x copied" << std::endl;
 
-    int status;
-    status = p->Rf->solve(p->vec_rhs, p->vec_x);
-    std::cout << "rocsolver rf solve status: " << status << std::endl;
+    int status = p->Rf->solve(p->vec_rhs, p->vec_x);
+    if (status != 0) {
+      scs_printf("Error in ReSolve Rf solve: %d\n", (int)status);
+      return status;
+    }
 
     // Copy the solution back to the host
-    p->vec_x->deepCopyVectorData(b, ReSolve::memory::HOST);
+    // std::cout << "scs_solve_lin_sys: copying solution back to host" << std::endl;
+    p->vec_x->copyDataTo(b, ReSolve::memory::DEVICE);
+    // std::cout << "scs_solve_lin_sys: solution copied back to host" << std::endl;
 
     return (scs_int)status;
   }
@@ -167,7 +187,8 @@ extern "C"
       p->kkt->x[p->diag_r_idxs[i]] = -diag_r[i];
     }
 
-    p->mat_A->updateValues(p->kkt->x, ReSolve::memory::HOST, ReSolve::memory::DEVICE);
+    p->mat_A->setValuesPointer(p->kkt->x, ReSolve::memory::HOST);
+    p->mat_A->syncData(ReSolve::memory::DEVICE);
 
     int status;
     status = p->Rf->refactorize();
