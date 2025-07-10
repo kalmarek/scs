@@ -5,7 +5,7 @@
 #include "linsys.h"
 #include <resolve/matrix/Csr.hpp>
 #include <resolve/vector/Vector.hpp>
-#include <resolve/LinSolverDirectRocSolverRf.hpp>
+#include <resolve/SystemSolver.hpp>
 
 #ifdef __cplusplus
 extern "C"
@@ -23,10 +23,11 @@ extern "C"
     scs_int *diag_r_idxs; /* indices where R appears */
     scs_float *diag_p;    /* Diagonal values of P */
 
-    ReSolve::LinSolverDirectRocSolverRf *Rf;
-    ReSolve::matrix::Csr *mat_A;
-    ReSolve::vector::Vector *vec_x;
-    ReSolve::vector::Vector *vec_rhs;
+    ReSolve::LinAlgWorkspaceHIP *workspace_hip; /* ReSolve workspace */
+    ReSolve::SystemSolver *solver; /* ReSolve system solver */
+    ReSolve::matrix::Csr *mat_A; /* ReSolve matrix A */
+    ReSolve::vector::Vector *vec_x; /* ReSolve vector x */
+    ReSolve::vector::Vector *vec_rhs; /* ReSolve vector rhs */
   };
 
 #ifdef __cplusplus
